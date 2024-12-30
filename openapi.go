@@ -198,21 +198,33 @@ type RequestBody struct {
 
 // Each Media Type Object provides schema and examples for the media type identified by its key.
 type MediaType struct {
-	Schema   Schema              `json:"schema,omitempty"`
-	Example  any                 `json:"example,omitempty"`
-	Examples map[string]Example  `json:"examples,omitempty"`
+	// The schema defining the content of the request, response, parameter, or header.
+	Schema Schema `json:"schema,omitempty"`
+	// Example of the media type.
+	Example any `json:"example,omitempty"`
+	// Examples of the media type.
+	Examples map[string]Example `json:"examples,omitempty"`
+	// A map between a property name and its encoding information. The key, being the property name, MUST exist in the schema as a property. The encoding field SHALL only apply to Request Body Objects, and only when the media type is multipart or application/x-www-form-urlencoded. If no Encoding Object is provided for a property, the behavior is determined by the default values documented for the Encoding Object.
 	Encoding map[string]Encoding `json:"encoding,omitempty"`
 }
 
+// A single encoding definition applied to a single schema property.
 type Encoding struct {
-	ContentType   string            `json:"contentType,omitempty"`
-	Headers       map[string]Header `json:"headers,omitempty"`
-	Style         string            `json:"style,omitempty"`
-	Explode       bool              `json:"explode,omitempty"`
-	AllowReserved bool              `json:"allow_reserved,omitempty"`
+	// The Content-Type for encoding a specific property. The value is a comma-separated list, each element of which is either a specific media type (e.g. image/png) or a wildcard media type (e.g. image/*). Default value depends on the property type as shown in the table below.
+	ContentType string `json:"contentType,omitempty"`
+	// A map allowing additional information to be provided as headers. Content-Type is described separately and SHALL be ignored in this section. This field SHALL be ignored if the request body media type is not a multipart.
+	Headers map[string]Header `json:"headers,omitempty"`
+	// Describes how a specific property value will be serialized depending on its type. See Parameter Object for details on the style field. The behavior follows the same values as query parameters, including default values. Note that the initial ? used in query strings is not used in application/x-www-form-urlencoded message bodies, and MUST be removed (if using an RFC6570 implementation) or simply not added (if constructing the string manually). This field SHALL be ignored if the request body media type is not application/x-www-form-urlencoded or multipart/form-data. If a value is explicitly defined, then the value of contentType (implicit or explicit) SHALL be ignored.
+	Style string `json:"style,omitempty"`
+	// When this is true, property values of type array or object generate separate parameters for each value of the array, or key-value-pair of the map. For other types of properties this field has no effect. When style is "form", the default value is true. For all other styles, the default value is false. Note that despite false being the default for deepObject, the combination of false with deepObject is undefined. This field SHALL be ignored if the request body media type is not application/x-www-form-urlencoded or multipart/form-data. If a value is explicitly defined, then the value of contentType (implicit or explicit) SHALL be ignored.
+	Explode bool `json:"explode,omitempty"`
+	// When this is true, parameter values are serialized using reserved expansion, as defined by RFC6570, which allows RFC3986's reserved character set, as well as percent-encoded triples, to pass through unchanged, while still percent-encoding all other disallowed characters (including % outside of percent-encoded triples). Applications are still responsible for percent-encoding reserved characters that are not allowed in the query string ([, ], #), or have a special meaning in application/x-www-form-urlencoded (-, &, +); see Appendices C and E for details. The default value is false. This field SHALL be ignored if the request body media type is not application/x-www-form-urlencoded or multipart/form-data. If a value is explicitly defined, then the value of contentType (implicit or explicit) SHALL be ignored.
+	AllowReserved bool `json:"allow_reserved,omitempty"`
 }
 
+// A container for the expected responses of an operation. The container maps a HTTP response code to the expected response.
 type Responses struct {
+	// The documentation of responses other than the ones declared for specific HTTP response codes. Use this field to cover undeclared responses.
 	Default                       Response
 	Continue                      Response `json:"100,omitempty"`
 	SwitchingProtocols            Response `json:"101,omitempty"`
@@ -278,83 +290,138 @@ type Responses struct {
 	NetworkAuthenticationRequired Response `json:"511,omitempty"`
 }
 
+// Describes a single response from an API operation, including design-time, static links to operations based on the response.
 type Response struct {
-	Description string               `json:"description,omitempty"`
-	Headers     map[string]Header    `json:"headers,omitempty"`
-	Content     map[string]MediaType `json:"content,omitempty"`
-	Links       map[string]Link      `json:"links,omitempty"`
+	// REQUIRED. A description of the response. CommonMark syntax MAY be used for rich text representation.
+	Description string `json:"description"`
+	// Maps a header name to its definition. RFC7230 states header names are case insensitive. If a response header is defined with the name "Content-Type", it SHALL be ignored.
+	Headers map[string]Header `json:"headers,omitempty"`
+	// A map containing descriptions of potential response payloads. The key is a media type or media type range and the value describes it. For responses that match multiple keys, only the most specific key is applicable. e.g. "text/plain" overrides "text/*"
+	Content map[string]MediaType `json:"content,omitempty"`
+	// A map of operations links that can be followed from the response. The key of the map is a short name for the link, following the naming constraints of the names for Component Objects.
+	Links map[string]Link `json:"links,omitempty"`
 }
 
+// A map of possible out-of band callbacks related to the parent operation. Each value in the map is a Path Item Object that describes a set of requests that may be initiated by the API provider and the expected responses. The key value used to identify the Path Item Object is an expression, evaluated at runtime, that identifies a URL to use for the callback operation.
 type Callback map[string]PathItem
 
+// An object grouping an internal or external example value with basic summary and description metadata. This object is typically used in fields named examples (plural), and is a referenceable alternative to older example (singular) fields that do not support referencing or metadata.
 type Example struct {
-	Summary       string `json:"summary,omitempty"`
-	Description   string `json:"description,omitempty"`
-	Value         any    `json:"value,omitempty"`
+	// Short description for the example.
+	Summary string `json:"summary,omitempty"`
+	// Long description for the example. CommonMark syntax MAY be used for rich text representation.
+	Description string `json:"description,omitempty"`
+	// Embedded literal example. The value field and externalValue field are mutually exclusive. To represent examples of media types that cannot naturally represented in JSON or YAML, use a string value to contain the example, escaping where necessary.
+	Value any `json:"value,omitempty"`
+	// A URI that identifies the literal example. This provides the capability to reference examples that cannot easily be included in JSON or YAML documents. The value field and externalValue field are mutually exclusive. See the rules for resolving Relative References.
 	ExternalValue string `json:"externalValue,omitempty"`
 }
 
+// The Link Object represents a possible design-time link for a response. The presence of a link does not guarantee the caller's ability to successfully invoke it, rather it provides a known relationship and traversal mechanism between responses and other operations.
 type Link struct {
-	OperationRef string         `json:"operationRef,omitempty"`
-	OperationID  string         `json:"operationId,omitempty"`
-	Parameters   map[string]any `json:"parameters,omitempty"`
-	RequestBody  any            `json:"requestBody,omitempty"`
-	Description  string         `json:"description,omitempty"`
-	Server       Server         `json:"server,omitempty"`
+	// A URI reference to an OAS operation. This field is mutually exclusive of the operationId field, and MUST point to an Operation Object. Relative operationRef values MAY be used to locate an existing Operation Object in the OpenAPI Description.
+	OperationRef string `json:"operationRef,omitempty"`
+	// The name of an existing, resolvable OAS operation, as defined with a unique operationId. This field is mutually exclusive of the operationRef field.
+	OperationID string `json:"operationId,omitempty"`
+	// A map representing parameters to pass to an operation as specified with operationId or identified via operationRef. The key is the parameter name to be used (optionally qualified with the parameter location, e.g. path.id for an id parameter in the path), whereas the value can be a constant or an expression to be evaluated and passed to the linked operation.
+	Parameters map[string]any `json:"parameters,omitempty"`
+	// A literal value or {expression} to use as a request body when calling the target operation.
+	RequestBody any `json:"requestBody,omitempty"`
+	// A description of the link. CommonMark syntax MAY be used for rich text representation.
+	Description string `json:"description,omitempty"`
+	// A server object to be used by the target operation.
+	Server Server `json:"server,omitempty"`
 }
 
+// Describes a single header for HTTP responses and for individual parts in multipart representations; see the relevant Response Object and Encoding Object documentation for restrictions on which headers can be described.
 type Header struct {
+	// A brief description of the header. This could contain examples of use. CommonMark syntax MAY be used for rich text representation.
 	Description string `json:"description,omitempty"`
-	Required    bool   `json:"required,omitempty"`
-	Deprecated  bool   `json:"deprecated,omitempty"`
+	// Determines whether this header is mandatory. The default value is false.
+	Required bool `json:"required,omitempty"`
+	// Specifies that the header is deprecated and SHOULD be transitioned out of usage. Default value is false.
+	Deprecated bool `json:"deprecated,omitempty"`
 
-	Style         string             `json:"style,omitempty"`
-	Explode       bool               `json:"explode,omitempty"`
-	AllowReserved bool               `json:"allow_reserved,omitempty"`
-	Schema        Schema             `json:"schema,omitempty"`
-	Example       any                `json:"example,omitempty"`
-	Examples      map[string]Example `json:"examples,omitempty"`
+	// Describes how the header value will be serialized. The default (and only legal value for headers) is "simple".
+	Style string `json:"style,omitempty"`
+	// When this is true, header values of type array or object generate a single header whose value is a comma-separated list of the array items or key-value pairs of the map, see Style Examples. For other data types this field has no effect. The default value is false.
+	Explode bool `json:"explode,omitempty"`
+	// The schema defining the type used for the header.
+	Schema Schema `json:"schema,omitempty"`
+	// Example of the header's potential value; see Working With Examples.
+	Example any `json:"example,omitempty"`
+	// Examples of the header's potential value; see Working With Examples.
+	Examples map[string]Example `json:"examples,omitempty"`
 
+	// A map containing the representations for the header. The key is the media type and the value describes it. The map MUST only contain one entry.
 	Content map[string]MediaType `json:"content,omitempty"`
 }
 
+// Adds metadata to a single tag that is used by the Operation Object. It is not mandatory to have a Tag Object per tag defined in the Operation Object instances.
 type Tag struct {
-	Name         string      `json:"name,omitempty"`
-	Description  string      `json:"description,omitempty"`
+	// REQUIRED. The name of the tag.
+	Name string `json:"name,omitempty"`
+	// A description for the tag. CommonMark syntax MAY be used for rich text representation.
+	Description string `json:"description,omitempty"`
+	// Additional external documentation for this tag.
 	ExternalDocs ExternalDoc `json:"externalDocs,omitempty"`
 }
 
+// A simple object to allow referencing other components in the OpenAPI Description, internally and externally.
 type Reference struct {
-	Ref         string `json:"$ref,omitempty"`
-	Summary     string `json:"summary,omitempty"`
+	// A simple object to allow referencing other components in the OpenAPI Description, internally and externally.
+	Ref string `json:"$ref,omitempty"`
+	// A short summary which by default SHOULD override that of the referenced component. If the referenced object-type does not allow a summary field, then this field has no effect.
+	Summary string `json:"summary,omitempty"`
+	// A description which by default SHOULD override that of the referenced component. CommonMark syntax MAY be used for rich text representation. If the referenced object-type does not allow a description field, then this field has no effect.
 	Description string `json:"description,omitempty"`
 }
 
 type Schema = any
 
+// Defines a security scheme that can be used by the operations.
 type SecurityScheme struct {
-	Type             string     `json:"type,omitempty"`
-	Description      string     `json:"description,omitempty"`
-	Name             string     `json:"name,omitempty"`
-	In               string     `json:"in,omitempty"`
-	Scheme           string     `json:"scheme,omitempty"`
-	BearerFormat     string     `json:"bearerFormat,omitempty"`
-	Flows            OAuthFlows `json:"flows,omitempty"`
-	OpenIDConnectURL string     `json:"openIdConnectUrl,omitempty"`
+	// REQUIRED. The type of the security scheme. Valid values are "apiKey", "http", "mutualTLS", "oauth2", "openIdConnect".
+	Type string `json:"type"`
+	// A description for security scheme. CommonMark syntax MAY be used for rich text representation.
+	Description string `json:"description,omitempty"`
+	// REQUIRED. The name of the header, query or cookie parameter to be used.
+	Name string `json:"name"`
+	// REQUIRED. The location of the API key. Valid values are "query", "header", or "cookie".
+	In string `json:"in"`
+	// REQUIRED. The name of the HTTP Authentication scheme to be used in the Authorization header as defined in RFC7235. The values used SHOULD be registered in the IANA Authentication Scheme registry. The value is case-insensitive, as defined in RFC7235.
+	Scheme string `json:"scheme"`
+	// A hint to the client to identify how the bearer token is formatted. Bearer tokens are usually generated by an authorization server, so this information is primarily for documentation purposes.
+	BearerFormat string `json:"bearerFormat,omitempty"`
+	// REQUIRED. An object containing configuration information for the flow types supported.
+	Flows OAuthFlows `json:"flows,omitempty"`
+	// REQUIRED. Well-known URL to discover the [[OpenID-Connect-Discovery]] provider metadata.
+	OpenIDConnectURL string `json:"openIdConnectUrl,omitempty"`
 }
 
+// Allows configuration of the supported OAuth Flows.
 type OAuthFlows struct {
-	Implicit          OAuthFlow `json:"implicit,omitempty"`
-	Password          OAuthFlow `json:"password,omitempty"`
+	// Configuration for the OAuth Implicit flow
+	Implicit OAuthFlow `json:"implicit,omitempty"`
+	// Configuration for the OAuth Resource Owner Password flow
+	Password OAuthFlow `json:"password,omitempty"`
+	// Configuration for the OAuth Client Credentials flow. Previously called application in OpenAPI 2.0.
 	ClientCredentials OAuthFlow `json:"clientCredentials,omitempty"`
+	// Configuration for the OAuth Authorization Code flow. Previously called accessCode in OpenAPI 2.0.
 	AuthorizationCode OAuthFlow `json:"authorizationCode,omitempty"`
 }
 
+// Configuration details for a supported OAuth Flow.
 type OAuthFlow struct {
-	AuthorizationUrl string            `json:"authorizationUrl,omitempty"`
-	TokenUrl         string            `json:"tokenUrl,omitempty"`
-	RefreshUrl       string            `json:"refreshUrl,omitempty"`
-	Scopes           map[string]string `json:"scopes,omitempty"`
+	// REQUIRED. The authorization URL to be used for this flow. This MUST be in the form of a URL. The OAuth2 standard requires the use of TLS.
+	AuthorizationURL string `json:"authorizationUrl"`
+	// REQUIRED. The token URL to be used for this flow. This MUST be in the form of a URL. The OAuth2 standard requires the use of TLS.
+	TokenURL string `json:"tokenUrl"`
+	// The URL to be used for obtaining refresh tokens. This MUST be in the form of a URL. The OAuth2 standard requires the use of TLS.
+	RefreshURL string `json:"refreshUrl,omitempty"`
+	// REQUIRED. The available scopes for the OAuth2 security scheme. A map between the scope name and a short description for it. The map MAY be empty.
+	Scopes map[string]string `json:"scopes"`
 }
 
+// Lists the required security schemes to execute this operation. The name used for each property MUST correspond to a security scheme declared in the Security Schemes under the Components Object.
 type SecurityRequirement map[string][]string
