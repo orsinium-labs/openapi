@@ -17,7 +17,7 @@ type OpenAPI struct {
 	// An element to hold various Objects for the OpenAPI Description.
 	Components Components `json:"components,omitzero"`
 	// A declaration of which security mechanisms can be used across the API. The list of values includes alternative Security Requirement Objects that can be used. Only one of the Security Requirement Objects need to be satisfied to authorize a request. Individual operations can override this definition. The list can be incomplete, up to being empty or absent. To make security explicitly optional, an empty security requirement ({}) can be included in the array.
-	Security SecurityRequirement `json:"security,omitzero"`
+	Security []SecurityRequirement `json:"security,omitzero"`
 	// A list of tags used by the OpenAPI Description with additional metadata. The order of the tags can be used to reflect on their order by the parsing tools. Not all tags that are used by the Operation Object must be declared. The tags that are not declared MAY be organized randomly or based on the tools' logic. Each tag name in the list MUST be unique.
 	Tags []Tag `json:"tags,omitzero"`
 	// Additional external documentation.
