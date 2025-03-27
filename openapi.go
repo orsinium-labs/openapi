@@ -3,9 +3,9 @@ package openapi
 // This is the root object of the OpenAPI Description.
 type OpenAPI struct {
 	// REQUIRED. This string MUST be the version number of the OpenAPI Specification that the OpenAPI Document uses. The openapi field SHOULD be used by tooling to interpret the OpenAPI Document. This is not related to the API info.version string.
-	Version string `json:"openapi,omitempty"`
-	//  	REQUIRED. Provides metadata about the API. The metadata MAY be used by tooling as required.
-	Info Info `json:"info,omitempty"`
+	Version string `json:"openapi"`
+	// REQUIRED. Provides metadata about the API. The metadata MAY be used by tooling as required.
+	Info Info `json:"info"`
 	// The default value for the $schema keyword within Schema Objects contained within this OAS document. This MUST be in the form of a URI.
 	JSONSchemaDialect string `json:"jsonSchemaDialect,omitempty"`
 	// An array of Server Objects, which provide connectivity information to a target server. If the servers field is not provided, or is an empty array, the default value would be a Server Object with a url value of /.
@@ -62,7 +62,7 @@ type License struct {
 // An object representing a Server.
 type Server struct {
 	// REQUIRED. A URL to the target host. This URL supports Server Variables and MAY be relative, to indicate that the host location is relative to the location where the document containing the Server Object is being served. Variable substitutions will be made when a variable is named in {braces}.
-	URL string `json:"url,omitempty"`
+	URL string `json:"url"`
 	// An optional string describing the host designated by the URL. CommonMark syntax MAY be used for rich text representation.
 	Description string `json:"description,omitempty"`
 	// A map between a variable name and its value. The value is used for substitution in the server's URL template.
@@ -74,7 +74,7 @@ type ServerVariable struct {
 	// An enumeration of string values to be used if the substitution options are from a limited set. The array MUST NOT be empty.
 	Enum []string `json:"enum,omitempty"`
 	// REQUIRED. The default value to use for substitution, which SHALL be sent if an alternate value is not supplied. If the enum is defined, the value MUST exist in the enum's values. Note that this behavior is different from the Schema Object's default keyword, which documents the receiver's behavior rather than inserting the value into the data.
-	Default string `json:"default,omitempty"`
+	Default string `json:"default"`
 	// An optional description for the server variable. CommonMark syntax MAY be used for rich text representation.
 	Description string `json:"description,omitempty"`
 }
@@ -149,7 +149,7 @@ type Operation struct {
 // Allows referencing an external resource for extended documentation.
 type ExternalDoc struct {
 	// REQUIRED. The URI for the target documentation. This MUST be in the form of a URI.
-	URL string `json:"url,omitempty"`
+	URL string `json:"url"`
 	// A description of the target documentation. CommonMark syntax MAY be used for rich text representation.
 	Description string `json:"description,omitempty"`
 }
@@ -157,9 +157,9 @@ type ExternalDoc struct {
 // Describes a single operation parameter.
 type Parameter struct {
 	// REQUIRED. The name of the parameter. Parameter names are case sensitive.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// REQUIRED. The location of the parameter. Possible values are "query", "header", "path" or "cookie".
-	In string `json:"in,omitempty"`
+	In string `json:"in"`
 	// A brief description of the parameter. This could contain examples of use. CommonMark syntax MAY be used for rich text representation.
 	Description string `json:"description,omitempty"`
 	// Determines whether this parameter is mandatory. If the parameter location is "path", this field is REQUIRED and its value MUST be true. Otherwise, the field MAY be included and its default value is false.
@@ -225,7 +225,7 @@ type Encoding struct {
 // A container for the expected responses of an operation. The container maps a HTTP response code to the expected response.
 type Responses struct {
 	// The documentation of responses other than the ones declared for specific HTTP response codes. Use this field to cover undeclared responses.
-	Default                       Response
+	Default                       Response `json:"default,omitempty"`
 	Continue                      Response `json:"100,omitempty"`
 	SwitchingProtocols            Response `json:"101,omitempty"`
 	Processing                    Response `json:"102,omitempty"`
@@ -360,7 +360,7 @@ type Header struct {
 // Adds metadata to a single tag that is used by the Operation Object. It is not mandatory to have a Tag Object per tag defined in the Operation Object instances.
 type Tag struct {
 	// REQUIRED. The name of the tag.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// A description for the tag. CommonMark syntax MAY be used for rich text representation.
 	Description string `json:"description,omitempty"`
 	// Additional external documentation for this tag.
