@@ -87,7 +87,7 @@ type Components struct {
 	Examples        map[string]Example        `json:"examples,omitzero"`
 	RequestBodies   map[string]RequestBody    `json:"requestBodies,omitzero"`
 	Headers         map[string]Header         `json:"headers,omitzero"`
-	SecuritySchemes map[string]SecurityScheme `json:"security_schemes,omitzero"`
+	SecuritySchemes map[string]SecurityScheme `json:"securitySchemes,omitzero"`
 	Links           map[string]Link           `json:"links,omitzero"`
 	Callbacks       map[string]Callback       `json:"callbacks,omitzero"`
 	PathItems       map[string]PathItem       `json:"pathItems,omitzero"`
@@ -174,7 +174,7 @@ type Parameter struct {
 	// When this is true, parameter values of type array or object generate separate parameters for each value of the array or key-value pair of the map. For other types of parameters this field has no effect. When style is "form", the default value is true. For all other styles, the default value is false. Note that despite false being the default for deepObject, the combination of false with deepObject is undefined.
 	Explode bool `json:"explode,omitzero"`
 	// When this is true, parameter values are serialized using reserved expansion, as defined by RFC6570, which allows RFC3986's reserved character set, as well as percent-encoded triples, to pass through unchanged, while still percent-encoding all other disallowed characters (including % outside of percent-encoded triples). Applications are still responsible for percent-encoding reserved characters that are not allowed in the query string ([, ], #), or have a special meaning in application/x-www-form-urlencoded (-, &, +); see Appendices C and E for details. This field only applies to parameters with an in value of query. The default value is false.
-	AllowReserved bool `json:"allow_reserved,omitzero"`
+	AllowReserved bool `json:"allowReserved,omitzero"`
 	// The schema defining the type used for the parameter.
 	Schema Schema `json:"schema,omitzero"`
 	// Example of the parameter's potential value; see Working With Examples.
@@ -219,7 +219,7 @@ type Encoding struct {
 	// When this is true, property values of type array or object generate separate parameters for each value of the array, or key-value-pair of the map. For other types of properties this field has no effect. When style is "form", the default value is true. For all other styles, the default value is false. Note that despite false being the default for deepObject, the combination of false with deepObject is undefined. This field SHALL be ignored if the request body media type is not application/x-www-form-urlencoded or multipart/form-data. If a value is explicitly defined, then the value of contentType (implicit or explicit) SHALL be ignored.
 	Explode bool `json:"explode,omitzero"`
 	// When this is true, parameter values are serialized using reserved expansion, as defined by RFC6570, which allows RFC3986's reserved character set, as well as percent-encoded triples, to pass through unchanged, while still percent-encoding all other disallowed characters (including % outside of percent-encoded triples). Applications are still responsible for percent-encoding reserved characters that are not allowed in the query string ([, ], #), or have a special meaning in application/x-www-form-urlencoded (-, &, +); see Appendices C and E for details. The default value is false. This field SHALL be ignored if the request body media type is not application/x-www-form-urlencoded or multipart/form-data. If a value is explicitly defined, then the value of contentType (implicit or explicit) SHALL be ignored.
-	AllowReserved bool `json:"allow_reserved,omitzero"`
+	AllowReserved bool `json:"allowReserved,omitzero"`
 }
 
 // A container for the expected responses of an operation. The container maps a HTTP response code to the expected response.
